@@ -2,13 +2,11 @@ import type { Request } from "express";
 import type { AllResponse, FetchAllResult, StationDetail, UnifiedStation } from "../../types/aqi.js";
 import { CACHE_TTL_MS } from "../../lib/httpCache.js";
 import { mapAir4ThaiData } from "./providers/air4thai.js";
-import { fetchAir4ThaiJson } from "./providers/air4thaiFetch.js";
 import { mapAirGradientData } from "./providers/airGradient.js";
 import { mapCUSenseData } from "./providers/cuSense.js";
 import { pushHistory, attachHistory } from "./history.js";
 
-// HTTPS directly: the plain-http URL only 301-redirects here.
-const AIR4THAI_URL = 'https://air4thai.pcd.go.th/services/getNewAQI_JSON.php';
+const AIR4THAI_URL = 'http://air4thai.pcd.go.th/services/getNewAQI_JSON.php';
 const AIRGRADIENT_URL = 'https://api.airgradient.com/public/api/v1/world/locations/measures/current';
 const CUSENSE_URL = 'https://www.cusense.net:8082/api/v1/sensorData/realtime/all';
 
@@ -53,7 +51,7 @@ export function getSpriteBaseUrl(req: Request): string {
 
 export async function fetchAllStations(): Promise<FetchAllResult> {
   const [air4thaiResult, cuSenseResult, airGradientResult] = await Promise.allSettled([
-    fetchAir4ThaiJson(AIR4THAI_URL), // custom CA trust: see air4thaiFetch.ts
+    fetchJson(AIR4THAI_URL),
     fetchJson(CUSENSE_URL, {
       method: 'GET',
       headers: {
